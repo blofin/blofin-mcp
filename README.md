@@ -17,30 +17,39 @@ A Model Context Protocol (MCP) server for the [BloFin](https://blofin.com/) cryp
 ### Account (authentication required)
 - `get_balance` - Get futures account balance
 - `get_positions` - Get open positions
-- `get_leverage_info` / `set_leverage` - View/set leverage
-- `get_margin_mode` / `set_margin_mode` - View/set margin mode
-- `get_position_mode` / `set_position_mode` - View/set position mode
+- `get_leverage_info` - Get leverage info for an instrument
+- `set_leverage` - Set leverage for an instrument
+- `get_margin_mode` - Get current margin mode for an instrument
+- `set_margin_mode` - Set margin mode for an instrument
+- `get_position_mode` - Get current position mode
+- `set_position_mode` - Set position mode
 - `get_account_config` - Get account configuration
 
 ### Trading (authentication required)
 - `place_order` - Place a new order (market, limit, post_only, fok, ioc)
 - `cancel_order` - Cancel an order
-- `batch_orders` / `cancel_batch_orders` - Batch order operations
+- `batch_orders` - Place multiple orders at once
+- `cancel_batch_orders` - Cancel multiple orders at once
 - `close_position` - Close a position
 - `get_open_orders` - Get pending orders
 - `get_order_history` - Get order history
 - `get_order_detail` - Get specific order details
 - `get_fills_history` - Get trade fill history
-- `place_tpsl` / `cancel_tpsl` - Take-profit/stop-loss orders
-- `get_pending_tpsl` / `get_tpsl_history` - View TP/SL orders
-- `place_algo_order` / `cancel_algo_order` - Algo/trigger orders
-- `get_pending_algo_orders` / `get_algo_order_history` - View algo orders
+- `place_tpsl` - Place take-profit/stop-loss order
+- `cancel_tpsl` - Cancel a take-profit/stop-loss order
+- `get_pending_tpsl` - Get pending TP/SL orders
+- `get_tpsl_history` - Get TP/SL order history
+- `place_algo_order` - Place an algo order (trigger/conditional)
+- `cancel_algo_order` - Cancel algo orders
+- `get_pending_algo_orders` - Get pending algo orders
+- `get_algo_order_history` - Get algo order history
 
 ### Asset Management (authentication required)
 - `get_asset_balances` - Get balances across account types
 - `fund_transfer` - Transfer funds between accounts
 - `get_fund_transfer_history` - Get transfer history
-- `get_deposit_history` / `get_withdrawal_history` - Deposit/withdrawal records
+- `get_deposit_history` - Get deposit history
+- `get_withdrawal_history` - Get withdrawal history
 - `get_apikey_info` - Get API key information
 
 ## Important Risk Notice

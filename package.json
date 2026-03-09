@@ -27,7 +27,7 @@
     "crypto"
   ],
   "author": "BloFin",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/blofin/blofin-mcp.git"
