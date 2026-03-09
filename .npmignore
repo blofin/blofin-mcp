@@ -1,0 +1,11 @@
+src/
+*.ts
+!dist/**
+tsconfig.json
+test.ts
+debug.ts
+trade_test.ts
+debug2.ts
+debug3.ts
+.gitignore
+.env

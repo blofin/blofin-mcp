@@ -1,0 +1,51 @@
+{
+  "name": "blofin-mcp",
+  "version": "1.1.2",
+  "description": "MCP server for BloFin exchange API - market data, trading, account management",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "blofin-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run typecheck && npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "blofin",
+    "trading",
+    "crypto"
+  ],
+  "author": "BloFin",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/blofin/blofin-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/blofin/blofin-mcp/issues"
+  },
+  "homepage": "https://github.com/blofin/blofin-mcp#readme",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^25.2.3",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  }
+}
