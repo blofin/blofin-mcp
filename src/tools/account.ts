@@ -8,9 +8,13 @@ export function registerAccountTools(
   server.tool(
     "get_balance",
     "Get futures account balance details including equity, available balance, frozen amounts.",
-    {},
-    async () => {
-      const result = await client.privateGet("/api/v1/account/balance");
+    {
+      productType: z.string().optional().describe("Product type: USDT-FUTURES or COIN-FUTURES. Default USDT-FUTURES."),
+    },
+    async ({ productType }: { productType?: string }) => {
+      const params: Record<string, string> = {};
+      if (productType) params.productType = productType;
+      const result = await client.privateGet("/api/v1/account/balance", params);
       return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
     }
   );
@@ -59,23 +63,22 @@ export function registerAccountTools(
 
   server.tool(
     "get_margin_mode",
-    "Get current margin mode for an instrument.",
-    { instId: z.string().describe("Instrument ID, e.g. BTC-USDT") },
-    async ({ instId }: { instId: string }) => {
-      const result = await client.privateGet("/api/v1/account/margin-mode", { instId });
+    "Get current account-level margin mode (cross or isolated).",
+    {},
+    async () => {
+      const result = await client.privateGet("/api/v1/account/margin-mode");
       return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
     }
   );
 
   server.tool(
     "set_margin_mode",
-    "Set margin mode for an instrument.",
+    "Set account-level margin mode.",
     {
-      instId: z.string().describe("Instrument ID, e.g. BTC-USDT"),
       marginMode: z.string().describe("Margin mode: cross or isolated"),
     },
-    async ({ instId, marginMode }: { instId: string; marginMode: string }) => {
-      const result = await client.privatePost("/api/v1/account/set-margin-mode", { instId, marginMode });
+    async ({ marginMode }: { marginMode: string }) => {
+      const result = await client.privatePost("/api/v1/account/set-margin-mode", { marginMode });
       return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
     }
   );

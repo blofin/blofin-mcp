@@ -16,12 +16,12 @@ export function registerTradingTools(
     {
       instId: z.string().describe("Instrument ID, e.g. BTC-USDT"),
       marginMode: z.string().describe("Margin mode: cross or isolated"),
-      positionSide: z.string().optional().describe("Position side: long, short, or net. Default depends on position mode."),
+      positionSide: z.string().describe("Position side: net (One-way Mode), long or short (Hedge Mode)"),
       side: z.string().describe("Order side: buy or sell"),
       orderType: z.string().describe("Order type: market, limit, post_only, fok, ioc"),
-      price: z.string().optional().describe("Price (required for limit orders)"),
-      size: z.string().describe("Order size in contracts (min 0.1 for BTC-USDT)"),
-      reduceOnly: z.boolean().optional().describe("Whether reduce-only order"),
+      price: z.string().optional().describe("Price (required for limit orders, not applicable to market)"),
+      size: z.string().describe("Order size in contracts"),
+      reduceOnly: z.string().optional().describe("Whether reduce-only order: 'true' or 'false'. Default 'false'."),
       clientOrderId: z.string().optional().describe("Client-supplied order ID"),
       tpTriggerPrice: z.string().optional().describe("Take profit trigger price"),
       tpOrderPrice: z.string().optional().describe("Take profit order price. -1 for market price."),
@@ -30,21 +30,21 @@ export function registerTradingTools(
       brokerId: z.string().optional().describe("Broker ID"),
     },
     async (params: {
-      instId: string; marginMode: string; positionSide?: string; side: string;
-      orderType: string; price?: string; size: string; reduceOnly?: boolean;
+      instId: string; marginMode: string; positionSide: string; side: string;
+      orderType: string; price?: string; size: string; reduceOnly?: string;
       clientOrderId?: string; tpTriggerPrice?: string; tpOrderPrice?: string;
       slTriggerPrice?: string; slOrderPrice?: string; brokerId?: string;
     }) => {
       const body: Record<string, unknown> = {
         instId: params.instId,
         marginMode: params.marginMode,
+        positionSide: params.positionSide,
         side: params.side,
         orderType: params.orderType,
         size: params.size,
       };
-      if (params.positionSide) body.positionSide = params.positionSide;
       if (params.price) body.price = params.price;
-      if (params.reduceOnly !== undefined) body.reduceOnly = params.reduceOnly;
+      if (params.reduceOnly) body.reduceOnly = params.reduceOnly;
       if (params.clientOrderId) body.clientOrderId = params.clientOrderId;
       if (params.tpTriggerPrice) body.tpTriggerPrice = params.tpTriggerPrice;
       if (params.tpOrderPrice) body.tpOrderPrice = params.tpOrderPrice;
@@ -60,13 +60,13 @@ export function registerTradingTools(
     "cancel_order",
     "Cancel an existing order.",
     {
-      instId: z.string().describe("Instrument ID, e.g. BTC-USDT"),
-      orderId: z.string().optional().describe("Order ID"),
+      instId: z.string().optional().describe("Instrument ID, e.g. BTC-USDT"),
+      orderId: z.string().describe("Order ID"),
       clientOrderId: z.string().optional().describe("Client-supplied order ID"),
     },
-    async ({ instId, orderId, clientOrderId }: { instId: string; orderId?: string; clientOrderId?: string }) => {
-      const body: Record<string, unknown> = { instId };
-      if (orderId) body.orderId = orderId;
+    async ({ instId, orderId, clientOrderId }: { instId?: string; orderId: string; clientOrderId?: string }) => {
+      const body: Record<string, unknown> = { orderId };
+      if (instId) body.instId = instId;
       if (clientOrderId) body.clientOrderId = clientOrderId;
       const result = await client.privatePost("/api/v1/trade/cancel-order", body);
       return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
@@ -101,17 +101,16 @@ export function registerTradingTools(
 
   server.tool(
     "close_position",
-    "Close a position for an instrument.",
+    "Close a position for an instrument via a market order.",
     {
       instId: z.string().describe("Instrument ID, e.g. BTC-USDT"),
       marginMode: z.string().describe("Margin mode: cross or isolated"),
-      positionSide: z.string().optional().describe("Position side: long, short, or net"),
+      positionSide: z.string().describe("Position side: net (One-way Mode), long or short (Hedge Mode)"),
       clientOrderId: z.string().optional().describe("Client-supplied order ID"),
       brokerId: z.string().optional().describe("Broker ID provided by BloFin"),
     },
-    async ({ instId, marginMode, positionSide, clientOrderId, brokerId }: { instId: string; marginMode: string; positionSide?: string; clientOrderId?: string; brokerId?: string }) => {
-      const body: Record<string, unknown> = { instId, marginMode };
-      if (positionSide) body.positionSide = positionSide;
+    async ({ instId, marginMode, positionSide, clientOrderId, brokerId }: { instId: string; marginMode: string; positionSide: string; clientOrderId?: string; brokerId?: string }) => {
+      const body: Record<string, unknown> = { instId, marginMode, positionSide };
       if (clientOrderId) body.clientOrderId = clientOrderId;
       applyBrokerId(body, brokerId, client);
       const result = await client.privatePost("/api/v1/trade/close-position", body);
@@ -124,15 +123,17 @@ export function registerTradingTools(
     "Get list of currently open/pending orders.",
     {
       instId: z.string().optional().describe("Instrument ID, e.g. BTC-USDT"),
-      orderType: z.string().optional().describe("Order type filter"),
+      orderType: z.string().optional().describe("Order type filter: market, limit, post_only, fok, ioc"),
+      state: z.string().optional().describe("State filter: live, partially_filled"),
       after: z.string().optional().describe("Pagination - records earlier than this orderId"),
       before: z.string().optional().describe("Pagination - records newer than this orderId"),
       limit: z.string().optional().describe("Number of results, max 100. Default 20."),
     },
-    async ({ instId, orderType, after, before, limit }: { instId?: string; orderType?: string; after?: string; before?: string; limit?: string }) => {
+    async ({ instId, orderType, state, after, before, limit }: { instId?: string; orderType?: string; state?: string; after?: string; before?: string; limit?: string }) => {
       const params: Record<string, string> = {};
       if (instId) params.instId = instId;
       if (orderType) params.orderType = orderType;
+      if (state) params.state = state;
       if (after) params.after = after;
       if (before) params.before = before;
       if (limit) params.limit = limit;
@@ -146,17 +147,19 @@ export function registerTradingTools(
     "Get order history.",
     {
       instId: z.string().optional().describe("Instrument ID, e.g. BTC-USDT"),
-      orderType: z.string().optional().describe("Order type filter"),
+      orderType: z.string().optional().describe("Order type filter: market, limit, post_only, fok, ioc"),
+      state: z.string().optional().describe("State filter: canceled, filled, partially_canceled"),
       after: z.string().optional().describe("Pagination - records earlier than this orderId"),
       before: z.string().optional().describe("Pagination - records newer than this orderId"),
       begin: z.string().optional().describe("Filter begin timestamp (ms)"),
       end: z.string().optional().describe("Filter end timestamp (ms)"),
       limit: z.string().optional().describe("Number of results, max 100. Default 20."),
     },
-    async ({ instId, orderType, after, before, begin, end, limit }: { instId?: string; orderType?: string; after?: string; before?: string; begin?: string; end?: string; limit?: string }) => {
+    async ({ instId, orderType, state, after, before, begin, end, limit }: { instId?: string; orderType?: string; state?: string; after?: string; before?: string; begin?: string; end?: string; limit?: string }) => {
       const params: Record<string, string> = {};
       if (instId) params.instId = instId;
       if (orderType) params.orderType = orderType;
+      if (state) params.state = state;
       if (after) params.after = after;
       if (before) params.before = before;
       if (begin) params.begin = begin;
@@ -169,15 +172,18 @@ export function registerTradingTools(
 
   server.tool(
     "get_order_detail",
-    "Get details of a specific order.",
+    "Get details of a specific order. Either orderId or clientOrderId or algoClientOrderId is required.",
     {
-      orderId: z.string().optional().describe("Order ID"),
+      instId: z.string().describe("Instrument ID, e.g. BTC-USDT"),
+      orderId: z.string().optional().describe("Order ID (takes priority if all provided)"),
       clientOrderId: z.string().optional().describe("Client-supplied order ID"),
+      algoClientOrderId: z.string().optional().describe("Algo client order ID"),
     },
-    async ({ orderId, clientOrderId }: { orderId?: string; clientOrderId?: string }) => {
-      const params: Record<string, string> = {};
+    async ({ instId, orderId, clientOrderId, algoClientOrderId }: { instId: string; orderId?: string; clientOrderId?: string; algoClientOrderId?: string }) => {
+      const params: Record<string, string> = { instId };
       if (orderId) params.orderId = orderId;
       if (clientOrderId) params.clientOrderId = clientOrderId;
+      if (algoClientOrderId) params.algoClientOrderId = algoClientOrderId;
       const result = await client.privateGet("/api/v1/trade/orders-detail", params);
       return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
     }
@@ -215,30 +221,36 @@ export function registerTradingTools(
     {
       instId: z.string().describe("Instrument ID, e.g. BTC-USDT"),
       marginMode: z.string().describe("Margin mode: cross or isolated"),
-      positionSide: z.string().optional().describe("Position side: long, short, or net"),
-      tpTriggerPrice: z.string().optional().describe("Take profit trigger price"),
+      positionSide: z.string().describe("Position side: net (One-way Mode), long or short (Hedge Mode)"),
+      side: z.string().describe("Order side: buy or sell"),
+      tpTriggerPrice: z.string().describe("Take profit trigger price"),
       tpOrderPrice: z.string().optional().describe("Take profit order price. -1 for market."),
       slTriggerPrice: z.string().optional().describe("Stop loss trigger price"),
       slOrderPrice: z.string().optional().describe("Stop loss order price. -1 for market."),
-      size: z.string().optional().describe("Size in contracts"),
+      size: z.string().describe("Size in contracts. -1 for entire position."),
+      reduceOnly: z.string().optional().describe("Whether reduce-only order: 'true' or 'false'. Default 'false'."),
+      clientOrderId: z.string().optional().describe("Client-supplied order ID"),
       brokerId: z.string().optional().describe("Broker ID provided by BloFin"),
     },
     async (params: {
-      instId: string; marginMode: string; positionSide?: string;
-      tpTriggerPrice?: string; tpOrderPrice?: string;
-      slTriggerPrice?: string; slOrderPrice?: string; size?: string;
-      brokerId?: string;
+      instId: string; marginMode: string; positionSide: string; side: string;
+      tpTriggerPrice: string; tpOrderPrice?: string;
+      slTriggerPrice?: string; slOrderPrice?: string; size: string;
+      reduceOnly?: string; clientOrderId?: string; brokerId?: string;
     }) => {
       const body: Record<string, unknown> = {
         instId: params.instId,
         marginMode: params.marginMode,
+        positionSide: params.positionSide,
+        side: params.side,
+        tpTriggerPrice: params.tpTriggerPrice,
+        size: params.size,
       };
-      if (params.positionSide) body.positionSide = params.positionSide;
-      if (params.tpTriggerPrice) body.tpTriggerPrice = params.tpTriggerPrice;
       if (params.tpOrderPrice) body.tpOrderPrice = params.tpOrderPrice;
       if (params.slTriggerPrice) body.slTriggerPrice = params.slTriggerPrice;
       if (params.slOrderPrice) body.slOrderPrice = params.slOrderPrice;
-      if (params.size) body.size = params.size;
+      if (params.reduceOnly) body.reduceOnly = params.reduceOnly;
+      if (params.clientOrderId) body.clientOrderId = params.clientOrderId;
       applyBrokerId(body, params.brokerId, client);
       const result = await client.privatePost("/api/v1/trade/order-tpsl", body);
       return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
@@ -247,13 +259,13 @@ export function registerTradingTools(
 
   server.tool(
     "cancel_tpsl",
-    "Cancel a take-profit/stop-loss order.",
+    "Cancel take-profit/stop-loss orders. Accepts a JSON array of cancel objects.",
     {
-      instId: z.string().describe("Instrument ID, e.g. BTC-USDT"),
-      tpslId: z.string().describe("TPSL order ID"),
+      orders: z.string().describe("JSON array string of cancel objects. Each needs: instId, tpslId. Optional: clientOrderId. E.g. [{\"instId\":\"BTC-USDT\",\"tpslId\":\"123\"}]"),
     },
-    async ({ instId, tpslId }: { instId: string; tpslId: string }) => {
-      const result = await client.privatePost("/api/v1/trade/cancel-tpsl", { instId, tpslId });
+    async ({ orders }: { orders: string }) => {
+      const parsed = JSON.parse(orders);
+      const result = await client.privatePost("/api/v1/trade/cancel-tpsl", parsed);
       return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
     }
   );
@@ -264,14 +276,16 @@ export function registerTradingTools(
     {
       instId: z.string().optional().describe("Instrument ID, e.g. BTC-USDT"),
       tpslId: z.string().optional().describe("TPSL order ID"),
-      after: z.string().optional().describe("Pagination - records earlier than this ID"),
-      before: z.string().optional().describe("Pagination - records newer than this ID"),
+      clientOrderId: z.string().optional().describe("Client-supplied order ID"),
+      after: z.string().optional().describe("Pagination - records earlier than this tpslId"),
+      before: z.string().optional().describe("Pagination - records newer than this tpslId"),
       limit: z.string().optional().describe("Number of results, max 100. Default 20."),
     },
-    async ({ instId, tpslId, after, before, limit }: { instId?: string; tpslId?: string; after?: string; before?: string; limit?: string }) => {
+    async ({ instId, tpslId, clientOrderId, after, before, limit }: { instId?: string; tpslId?: string; clientOrderId?: string; after?: string; before?: string; limit?: string }) => {
       const params: Record<string, string> = {};
       if (instId) params.instId = instId;
       if (tpslId) params.tpslId = tpslId;
+      if (clientOrderId) params.clientOrderId = clientOrderId;
       if (after) params.after = after;
       if (before) params.before = before;
       if (limit) params.limit = limit;
@@ -304,37 +318,42 @@ export function registerTradingTools(
 
   server.tool(
     "place_algo_order",
-    "Place an algo order (trigger/conditional order).",
+    "Place an algo order (trigger order).",
     {
       instId: z.string().describe("Instrument ID, e.g. BTC-USDT"),
       marginMode: z.string().describe("Margin mode: cross or isolated"),
-      positionSide: z.string().optional().describe("Position side: long, short, or net"),
+      positionSide: z.string().describe("Position side: net (One-way Mode), long or short (Hedge Mode)"),
       side: z.string().describe("Order side: buy or sell"),
-      orderType: z.string().describe("Order type: conditional, trigger"),
-      size: z.string().describe("Size in contracts"),
-      triggerPrice: z.string().optional().describe("Trigger price"),
+      orderType: z.string().describe("Algo type: trigger"),
+      size: z.string().describe("Size in contracts. -1 for entire position."),
+      triggerPrice: z.string().describe("Trigger price"),
+      triggerPriceType: z.string().optional().describe("Trigger price type: last (last price). Default last."),
       orderPrice: z.string().optional().describe("Order price after trigger. -1 for market."),
-      reduceOnly: z.boolean().optional().describe("Whether reduce-only order"),
+      reduceOnly: z.string().optional().describe("Whether reduce-only order: 'true' or 'false'. Default 'false'."),
       clientOrderId: z.string().optional().describe("Client-supplied order ID"),
+      attachAlgoOrders: z.string().optional().describe("JSON array string of attached TP/SL orders. Each can have: tpTriggerPrice, tpOrderPrice, tpTriggerPriceType, slTriggerPrice, slOrderPrice, slTriggerPriceType"),
       brokerId: z.string().optional().describe("Broker ID provided by BloFin"),
     },
     async (params: {
-      instId: string; marginMode: string; positionSide?: string; side: string;
-      orderType: string; size: string; triggerPrice?: string; orderPrice?: string;
-      reduceOnly?: boolean; clientOrderId?: string; brokerId?: string;
+      instId: string; marginMode: string; positionSide: string; side: string;
+      orderType: string; size: string; triggerPrice: string; triggerPriceType?: string;
+      orderPrice?: string; reduceOnly?: string; clientOrderId?: string;
+      attachAlgoOrders?: string; brokerId?: string;
     }) => {
       const body: Record<string, unknown> = {
         instId: params.instId,
         marginMode: params.marginMode,
+        positionSide: params.positionSide,
         side: params.side,
         orderType: params.orderType,
         size: params.size,
+        triggerPrice: params.triggerPrice,
       };
-      if (params.positionSide) body.positionSide = params.positionSide;
-      if (params.triggerPrice) body.triggerPrice = params.triggerPrice;
+      if (params.triggerPriceType) body.triggerPriceType = params.triggerPriceType;
       if (params.orderPrice) body.orderPrice = params.orderPrice;
-      if (params.reduceOnly !== undefined) body.reduceOnly = params.reduceOnly;
+      if (params.reduceOnly) body.reduceOnly = params.reduceOnly;
       if (params.clientOrderId) body.clientOrderId = params.clientOrderId;
+      if (params.attachAlgoOrders) body.attachAlgoOrders = JSON.parse(params.attachAlgoOrders);
       applyBrokerId(body, params.brokerId, client);
       const result = await client.privatePost("/api/v1/trade/order-algo", body);
       return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
@@ -343,13 +362,18 @@ export function registerTradingTools(
 
   server.tool(
     "cancel_algo_order",
-    "Cancel algo orders.",
+    "Cancel an algo order.",
     {
-      orders: z.string().describe("JSON array string of cancel objects, each with instId and algoId."),
+      instId: z.string().optional().describe("Instrument ID, e.g. BTC-USDT"),
+      algoId: z.string().optional().describe("Algo order ID"),
+      clientOrderId: z.string().optional().describe("Client-supplied order ID"),
     },
-    async ({ orders }: { orders: string }) => {
-      const parsed = JSON.parse(orders);
-      const result = await client.privatePost("/api/v1/trade/cancel-algo", parsed);
+    async ({ instId, algoId, clientOrderId }: { instId?: string; algoId?: string; clientOrderId?: string }) => {
+      const body: Record<string, unknown> = {};
+      if (instId) body.instId = instId;
+      if (algoId) body.algoId = algoId;
+      if (clientOrderId) body.clientOrderId = clientOrderId;
+      const result = await client.privatePost("/api/v1/trade/cancel-algo", body);
       return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
     }
   );
@@ -360,14 +384,18 @@ export function registerTradingTools(
     {
       instId: z.string().optional().describe("Instrument ID, e.g. BTC-USDT"),
       algoId: z.string().optional().describe("Algo order ID"),
-      after: z.string().optional().describe("Pagination - records earlier than this ID"),
-      before: z.string().optional().describe("Pagination - records newer than this ID"),
+      clientOrderId: z.string().optional().describe("Client-supplied order ID"),
+      orderType: z.string().optional().describe("Algo type filter: trigger"),
+      after: z.string().optional().describe("Pagination - records earlier than this algoId"),
+      before: z.string().optional().describe("Pagination - records newer than this algoId"),
       limit: z.string().optional().describe("Number of results, max 100. Default 20."),
     },
-    async ({ instId, algoId, after, before, limit }: { instId?: string; algoId?: string; after?: string; before?: string; limit?: string }) => {
+    async ({ instId, algoId, clientOrderId, orderType, after, before, limit }: { instId?: string; algoId?: string; clientOrderId?: string; orderType?: string; after?: string; before?: string; limit?: string }) => {
       const params: Record<string, string> = {};
       if (instId) params.instId = instId;
       if (algoId) params.algoId = algoId;
+      if (clientOrderId) params.clientOrderId = clientOrderId;
+      if (orderType) params.orderType = orderType;
       if (after) params.after = after;
       if (before) params.before = before;
       if (limit) params.limit = limit;
