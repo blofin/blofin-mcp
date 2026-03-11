@@ -184,7 +184,7 @@ export function registerTradingTools(
       if (orderId) params.orderId = orderId;
       if (clientOrderId) params.clientOrderId = clientOrderId;
       if (algoClientOrderId) params.algoClientOrderId = algoClientOrderId;
-      const result = await client.privateGet("/api/v1/trade/orders-detail", params);
+      const result = await client.privateGet("/api/v1/trade/order-detail", params);
       return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
     }
   );
@@ -410,14 +410,38 @@ export function registerTradingTools(
     {
       instId: z.string().optional().describe("Instrument ID, e.g. BTC-USDT"),
       algoId: z.string().optional().describe("Algo order ID"),
+      clientOrderId: z.string().optional().describe("Client-supplied order ID"),
+      state: z.enum(["live", "effective", "canceled", "order_failed"]).optional().describe("State: live, effective, canceled, order_failed"),
+      orderType: z.literal("trigger").describe("Algo type (required): trigger"),
       after: z.string().optional().describe("Pagination - records earlier than this ID"),
       before: z.string().optional().describe("Pagination - records newer than this ID"),
       limit: z.string().optional().describe("Number of results, max 100. Default 20."),
     },
-    async ({ instId, algoId, after, before, limit }: { instId?: string; algoId?: string; after?: string; before?: string; limit?: string }) => {
+    async ({
+      instId,
+      algoId,
+      clientOrderId,
+      state,
+      orderType,
+      after,
+      before,
+      limit,
+    }: {
+      instId?: string;
+      algoId?: string;
+      clientOrderId?: string;
+      state?: string;
+      orderType: "trigger";
+      after?: string;
+      before?: string;
+      limit?: string;
+    }) => {
       const params: Record<string, string> = {};
       if (instId) params.instId = instId;
       if (algoId) params.algoId = algoId;
+      if (clientOrderId) params.clientOrderId = clientOrderId;
+      if (state) params.state = state;
+      params.orderType = orderType;
       if (after) params.after = after;
       if (before) params.before = before;
       if (limit) params.limit = limit;

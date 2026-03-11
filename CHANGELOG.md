@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.6] - 2026-03-10
+
+### Fixed
+
+- Corrected `get_order_detail` endpoint path to `/api/v1/trade/order-detail` to match BloFin API.
+
+### Changed
+
+- Aligned `get_algo_order_history` request parameters with BloFin API documentation.
+- Added support for `clientOrderId` and `state` filters on algo order history queries.
+- Made `orderType` explicit (`trigger`) for algo history requests and forwarded it to the API.
+
 ## [1.1.4] - 2026-03-10
 
 ### Changed
