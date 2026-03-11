@@ -217,24 +217,24 @@ export function registerTradingTools(
 
   server.tool(
     "place_tpsl",
-    "Place take-profit/stop-loss order for a position.",
+    "Place take-profit/stop-loss order for a position. Either tpTriggerPrice or slTriggerPrice (or both) must be provided.",
     {
       instId: z.string().describe("Instrument ID, e.g. BTC-USDT"),
       marginMode: z.string().describe("Margin mode: cross or isolated"),
-      positionSide: z.string().describe("Position side: net (One-way Mode), long or short (Hedge Mode)"),
+      positionSide: z.string().describe("Position side: net (One-way Mode), long or short (Hedge Mode). Must be sent in Hedge Mode."),
       side: z.string().describe("Order side: buy or sell"),
-      tpTriggerPrice: z.string().describe("Take profit trigger price"),
-      tpOrderPrice: z.string().optional().describe("Take profit order price. -1 for market."),
-      slTriggerPrice: z.string().optional().describe("Stop loss trigger price"),
-      slOrderPrice: z.string().optional().describe("Stop loss order price. -1 for market."),
-      size: z.string().describe("Size in contracts. -1 for entire position."),
-      reduceOnly: z.string().optional().describe("Whether reduce-only order: 'true' or 'false'. Default 'false'."),
-      clientOrderId: z.string().optional().describe("Client-supplied order ID"),
-      brokerId: z.string().optional().describe("Broker ID provided by BloFin"),
+      tpTriggerPrice: z.string().optional().describe("Take-profit trigger price. If provided, tpOrderPrice should also be filled. Either tpTriggerPrice or slTriggerPrice must be provided."),
+      tpOrderPrice: z.string().optional().describe("Take-profit order price. If provided, tpTriggerPrice should also be filled. -1 for market price."),
+      slTriggerPrice: z.string().optional().describe("Stop-loss trigger price. If provided, slOrderPrice should also be filled. Either tpTriggerPrice or slTriggerPrice must be provided."),
+      slOrderPrice: z.string().optional().describe("Stop-loss order price. If provided, slTriggerPrice should also be filled. -1 for market price."),
+      size: z.string().describe("Quantity in contracts. -1 for entire position."),
+      reduceOnly: z.string().optional().describe("Whether orders can only reduce position size: 'true' or 'false'. Default 'false'. When true and opposite order exceeds position size, position is fully closed without opening a new one."),
+      clientOrderId: z.string().optional().describe("Client Order ID. Up to 32 case-sensitive alphanumeric characters."),
+      brokerId: z.string().optional().describe("Broker ID provided by BloFin. Up to 16 case-sensitive alphanumeric characters."),
     },
     async (params: {
       instId: string; marginMode: string; positionSide: string; side: string;
-      tpTriggerPrice: string; tpOrderPrice?: string;
+      tpTriggerPrice?: string; tpOrderPrice?: string;
       slTriggerPrice?: string; slOrderPrice?: string; size: string;
       reduceOnly?: string; clientOrderId?: string; brokerId?: string;
     }) => {
@@ -243,9 +243,9 @@ export function registerTradingTools(
         marginMode: params.marginMode,
         positionSide: params.positionSide,
         side: params.side,
-        tpTriggerPrice: params.tpTriggerPrice,
         size: params.size,
       };
+      if (params.tpTriggerPrice) body.tpTriggerPrice = params.tpTriggerPrice;
       if (params.tpOrderPrice) body.tpOrderPrice = params.tpOrderPrice;
       if (params.slTriggerPrice) body.slTriggerPrice = params.slTriggerPrice;
       if (params.slOrderPrice) body.slOrderPrice = params.slOrderPrice;
