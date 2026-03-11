@@ -10,6 +10,7 @@ import { registerAssetTools } from "./tools/asset.js";
 
 const DEMO_BASE_URL = "https://demo-trading-openapi.blofin.com";
 const PROD_BASE_URL = "https://openapi.blofin.com";
+const DEFAULT_BROKER_ID = "dd3511977f23cc87";
 
 function getEnvOrThrow(name: string): string {
   const val = process.env[name];
@@ -19,12 +20,24 @@ function getEnvOrThrow(name: string): string {
   return val;
 }
 
+function resolveBrokerId(baseUrl: string): string | undefined {
+  // Demo trading does not require broker ID
+  if (baseUrl === DEMO_BASE_URL) return undefined;
+  const raw = process.env.BLOFIN_BROKER_ID;
+  // Transaction API users: set BLOFIN_BROKER_ID=none to disable
+  if (raw === "none") return undefined;
+  // Custom broker ID: use as-is
+  if (raw) return raw;
+  // Default: use built-in broker ID for Broker API users
+  return DEFAULT_BROKER_ID;
+}
+
 async function main() {
   const apiKey = getEnvOrThrow("BLOFIN_API_KEY");
   const secretKey = getEnvOrThrow("BLOFIN_API_SECRET");
   const passphrase = getEnvOrThrow("BLOFIN_PASSPHRASE");
   const baseUrl = process.env.BLOFIN_BASE_URL || DEMO_BASE_URL;
-  const brokerId = process.env.BLOFIN_BROKER_ID || undefined;
+  const brokerId = resolveBrokerId(baseUrl);
 
   const client = new BlofinClient({ apiKey, secretKey, passphrase, baseUrl, brokerId });
 

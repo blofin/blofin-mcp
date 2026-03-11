@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-03-11
+
+### Added
+
+- Built-in default Broker ID for production environment — most users can now get started without any extra Broker ID configuration.
+- API Key setup guide in README directing users to create a BloFin MCP API Key at blofin.com.
+
+### Changed
+
+- Broker ID is automatically skipped in demo trading environment.
+- Users with Transaction API access can set `BLOFIN_BROKER_ID=none` to disable Broker ID.
+- Removed Broker ID from user-facing configuration examples (handled internally).
+
 ## [1.1.6] - 2026-03-10
 
 ### Fixed

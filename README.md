@@ -68,6 +68,14 @@ Current implementation registers **40 tools** in total:
 - Trading: 17 tools
 - Asset Management: 6 tools
 
+## Getting Your API Key
+
+1. Go to [blofin.com](https://blofin.com/) and log in (or create an account)
+2. Navigate to **APIs** page
+3. Click **Create API Key** and select **BloFin MCP** as the API type
+4. Set your permissions (read-only for market data, or enable trading as needed)
+5. Save your **API Key**, **Secret Key**, and **Passphrase** — you'll need them for configuration below
+
 ## Environment Variables
 
 | Variable | Required | Description |
@@ -76,7 +84,6 @@ Current implementation registers **40 tools** in total:
 | `BLOFIN_API_SECRET` | Yes | Your BloFin API secret |
 | `BLOFIN_PASSPHRASE` | Yes | Your BloFin API passphrase |
 | `BLOFIN_BASE_URL` | No | API base URL (defaults to demo trading) |
-| `BLOFIN_BROKER_ID` | No | Broker ID provided by BloFin (auto-injected into trading requests) |
 
 ### Base URLs
 
@@ -107,8 +114,7 @@ Add to your Claude Desktop config (`Settings → Developer → Edit Config`):
         "BLOFIN_API_KEY": "your-api-key",
         "BLOFIN_API_SECRET": "your-api-secret",
         "BLOFIN_PASSPHRASE": "your-passphrase",
-        "BLOFIN_BASE_URL": "https://openapi.blofin.com",
-        "BLOFIN_BROKER_ID": "your-broker-id"
+        "BLOFIN_BASE_URL": "https://openapi.blofin.com"
       }
     }
   }
@@ -137,8 +143,7 @@ Add `"mcpServers"` to your `~/.openclaw/openclaw.json` (top-level field, alongsi
         "BLOFIN_API_KEY": "your-api-key",
         "BLOFIN_API_SECRET": "your-api-secret",
         "BLOFIN_PASSPHRASE": "your-passphrase",
-        "BLOFIN_BASE_URL": "https://openapi.blofin.com",
-        "BLOFIN_BROKER_ID": "your-broker-id"
+        "BLOFIN_BASE_URL": "https://openapi.blofin.com"
       }
     }
   }
