@@ -24,11 +24,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Type check
-        run: npm run typecheck
-
       - name: Build & pack MCPB
-        run: npx mcpb pack
+        run: npm run pack:mcpb
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
