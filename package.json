@@ -9,6 +9,7 @@
   },
   "files": [
     "dist",
+    "manifest.json",
     "README.md",
     "LICENSE"
   ],
@@ -18,7 +19,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepublishOnly": "npm run typecheck && npm run build"
+    "prepublishOnly": "npm run typecheck && npm run build",
+    "pack:mcpb": "npm run build && mcpb pack"
   },
   "keywords": [
     "mcp",
@@ -27,7 +29,7 @@
     "crypto"
   ],
   "author": "BloFin",
-  "license": "Apache-2.0",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/blofin/blofin-mcp.git"
@@ -44,6 +46,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@anthropic-ai/mcpb": "^2.1.2",
     "@types/chai": "^5.2.3",
     "@types/deep-eql": "^4.0.2",
     "@types/estree": "^1.0.8",

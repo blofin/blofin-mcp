@@ -8,3 +8,4 @@ dist/
 .env
 test.ts
 debug.ts
+*.mcpb

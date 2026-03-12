@@ -1,0 +1,111 @@
+{
+  "manifest_version": "0.3",
+  "name": "blofin-mcp",
+  "display_name": "BloFin Exchange",
+  "version": "1.2.0",
+  "description": "MCP server for BloFin exchange API - market data, trading, account management",
+  "long_description": "Connect Claude to BloFin cryptocurrency exchange. Access real-time market data, manage your futures account, place and cancel orders, set take-profit/stop-loss, and track trade history — all through natural language.",
+  "author": {
+    "name": "BloFin",
+    "url": "https://github.com/blofin"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/blofin/blofin-mcp"
+  },
+  "server": {
+    "type": "node",
+    "entry_point": "dist/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/dist/index.js"],
+      "env": {
+        "BLOFIN_API_KEY": "${user_config.api_key}",
+        "BLOFIN_API_SECRET": "${user_config.api_secret}",
+        "BLOFIN_PASSPHRASE": "${user_config.passphrase}",
+        "BLOFIN_BASE_URL": "${user_config.base_url}"
+      }
+    }
+  },
+  "user_config": {
+    "api_key": {
+      "title": "API Key",
+      "type": "string",
+      "description": "BloFin API key",
+      "required": true,
+      "sensitive": true
+    },
+    "api_secret": {
+      "title": "API Secret",
+      "type": "string",
+      "description": "BloFin API secret",
+      "required": true,
+      "sensitive": true
+    },
+    "passphrase": {
+      "title": "Passphrase",
+      "type": "string",
+      "description": "BloFin API passphrase",
+      "required": true,
+      "sensitive": true
+    },
+    "base_url": {
+      "title": "Base URL",
+      "type": "string",
+      "description": "Demo: https://demo-trading-openapi.blofin.com | Production: https://openapi.blofin.com",
+      "required": false,
+      "default": "https://demo-trading-openapi.blofin.com"
+    }
+  },
+  "tools": [
+    { "name": "get_instruments", "description": "Get available trading instruments. Returns contract specifications including min size, tick size, leverage limits." },
+    { "name": "get_tickers", "description": "Get latest price snapshot, best bid/ask, and 24h trading volume for instruments." },
+    { "name": "get_orderbook", "description": "Get order book depth for an instrument." },
+    { "name": "get_trades", "description": "Get recent trades for an instrument." },
+    { "name": "get_mark_price", "description": "Get mark price and index price for instruments." },
+    { "name": "get_candlesticks", "description": "Get candlestick/kline data for an instrument." },
+    { "name": "get_funding_rate", "description": "Get current funding rate for instruments." },
+    { "name": "get_funding_rate_history", "description": "Get historical funding rate data." },
+    { "name": "get_balance", "description": "Get futures account balance details including equity, available balance, frozen amounts." },
+    { "name": "get_positions", "description": "Get current open positions." },
+    { "name": "get_leverage_info", "description": "Get leverage info for an instrument." },
+    { "name": "set_leverage", "description": "Set leverage for an instrument." },
+    { "name": "get_margin_mode", "description": "Get current account-level margin mode (cross or isolated)." },
+    { "name": "set_margin_mode", "description": "Set account-level margin mode." },
+    { "name": "get_position_mode", "description": "Get current position mode (long_short_mode or net_mode)." },
+    { "name": "set_position_mode", "description": "Set position mode." },
+    { "name": "get_account_config", "description": "Get account configuration including position mode, account level, etc." },
+    { "name": "place_order", "description": "Place a new futures order. Supports limit, market, post_only, fok, ioc order types." },
+    { "name": "cancel_order", "description": "Cancel an existing order." },
+    { "name": "batch_orders", "description": "Place multiple orders at once (up to 20). All must share same instId and marginMode." },
+    { "name": "cancel_batch_orders", "description": "Cancel multiple orders at once." },
+    { "name": "close_position", "description": "Close a position for an instrument via a market order." },
+    { "name": "get_open_orders", "description": "Get list of currently open/pending orders." },
+    { "name": "get_order_history", "description": "Get order history." },
+    { "name": "get_order_detail", "description": "Get details of a specific order." },
+    { "name": "get_fills_history", "description": "Get trade fill history for futures." },
+    { "name": "place_tpsl", "description": "Place take-profit/stop-loss order for a position." },
+    { "name": "cancel_tpsl", "description": "Cancel take-profit/stop-loss orders." },
+    { "name": "get_pending_tpsl", "description": "Get pending take-profit/stop-loss orders." },
+    { "name": "get_tpsl_history", "description": "Get take-profit/stop-loss order history." },
+    { "name": "place_algo_order", "description": "Place an algo order (trigger order)." },
+    { "name": "cancel_algo_order", "description": "Cancel an algo order." },
+    { "name": "get_pending_algo_orders", "description": "Get pending algo orders." },
+    { "name": "get_algo_order_history", "description": "Get algo order history." },
+    { "name": "get_asset_balances", "description": "Get asset balances across different account types." },
+    { "name": "fund_transfer", "description": "Transfer funds between accounts." },
+    { "name": "get_fund_transfer_history", "description": "Get fund transfer history between accounts." },
+    { "name": "get_deposit_history", "description": "Get deposit history." },
+    { "name": "get_withdrawal_history", "description": "Get withdrawal history." },
+    { "name": "get_apikey_info", "description": "Get API key information including permissions, IP whitelist, and expiration." }
+  ],
+  "keywords": ["mcp", "blofin", "trading", "crypto", "futures", "exchange"],
+  "license": "MIT",
+  "privacy_policies": ["https://blofin.com/privacy"],
+  "compatibility": {
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": {
+      "node": ">=20"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+src/
+tests/
+.git/
+.github/
+.claude/
+tsconfig.json
+.gitignore
+.mcpbignore
+*.ts
+*.map
+CHANGELOG.md
