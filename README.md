@@ -98,9 +98,13 @@ npm run typecheck
 npm run build
 ```
 
-## MCP Client Configuration
+## Installation
 
-### Claude Desktop
+### Claude Desktop (Extension)
+
+Download the latest `blofin-mcp.mcpb` from [GitHub Releases](https://github.com/blofin/blofin-mcp/releases) and double-click to install. Claude Desktop will prompt you to enter your API Key, API Secret, and Passphrase.
+
+### Claude Desktop (Manual)
 
 Add to your Claude Desktop config (`Settings → Developer → Edit Config`):
 
@@ -121,9 +125,83 @@ Add to your Claude Desktop config (`Settings → Developer → Edit Config`):
 }
 ```
 
-### Cursor / Windsurf / Cline
+### Claude Code
 
-Same configuration format as above. Add to each client's MCP settings.
+```bash
+claude mcp add blofin -- npx -y blofin-mcp
+```
+
+Then set environment variables in your shell profile or `.env` file:
+
+```bash
+export BLOFIN_API_KEY="your-api-key"
+export BLOFIN_API_SECRET="your-api-secret"
+export BLOFIN_PASSPHRASE="your-passphrase"
+export BLOFIN_BASE_URL="https://openapi.blofin.com"
+```
+
+### Cursor
+
+Add to `.cursor/mcp.json` in your project root (or global config at `~/.cursor/mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "blofin": {
+      "command": "npx",
+      "args": ["-y", "blofin-mcp"],
+      "env": {
+        "BLOFIN_API_KEY": "your-api-key",
+        "BLOFIN_API_SECRET": "your-api-secret",
+        "BLOFIN_PASSPHRASE": "your-passphrase",
+        "BLOFIN_BASE_URL": "https://openapi.blofin.com"
+      }
+    }
+  }
+}
+```
+
+### Windsurf
+
+Add to your Windsurf MCP config (`~/.codeium/windsurf/mcp_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "blofin": {
+      "command": "npx",
+      "args": ["-y", "blofin-mcp"],
+      "env": {
+        "BLOFIN_API_KEY": "your-api-key",
+        "BLOFIN_API_SECRET": "your-api-secret",
+        "BLOFIN_PASSPHRASE": "your-passphrase",
+        "BLOFIN_BASE_URL": "https://openapi.blofin.com"
+      }
+    }
+  }
+}
+```
+
+### Cline (VS Code)
+
+Open Cline MCP settings (`Cline → MCP Servers → Configure`) and add:
+
+```json
+{
+  "mcpServers": {
+    "blofin": {
+      "command": "npx",
+      "args": ["-y", "blofin-mcp"],
+      "env": {
+        "BLOFIN_API_KEY": "your-api-key",
+        "BLOFIN_API_SECRET": "your-api-secret",
+        "BLOFIN_PASSPHRASE": "your-passphrase",
+        "BLOFIN_BASE_URL": "https://openapi.blofin.com"
+      }
+    }
+  }
+}
+```
 
 ### OpenClaw
 
