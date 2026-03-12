@@ -20,7 +20,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "prepublishOnly": "npm run typecheck && npm run build",
-    "pack:mcpb": "npm run build && mcpb pack"
+    "pack:mcpb": "npm run build && npx --no-install mcpb pack"
   },
   "keywords": [
     "mcp",
