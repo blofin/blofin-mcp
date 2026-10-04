@@ -5,12 +5,22 @@ on:
     tags:
       - "v*"
 
+# Least privilege: only the release job needs write access, and only to create
+# releases. All other token scopes stay at the read-only default.
 permissions:
   contents: write
+
+# Never run two releases for the same tag concurrently; duplicate tag pushes
+# would race on the release asset upload.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    # Verify before publishing. A tag that fails typecheck/tests must not
+    # produce a published artifact.
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,6 +34,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
       - name: Build & pack MCPB
         run: npm run pack:mcpb
 
@@ -31,4 +47,5 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: "*.mcpb"
+          fail_on_unmatched_files: true
           generate_release_notes: true

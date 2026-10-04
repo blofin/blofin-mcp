@@ -6,6 +6,18 @@ on:
     branches:
       - main
 
+# Least privilege: the CI job only needs to read the repository. No write
+# scopes, so a compromised third-party action or a malicious build script
+# cannot modify releases, issues, or repository settings.
+permissions:
+  contents: read
+
+# Cancel superseded runs for the same ref to avoid wasting runners, while
+# still letting the latest commit finish.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -24,6 +36,9 @@ jobs:
 
       - name: Type check
         run: npm run typecheck
+
+      - name: Test
+        run: npm test
 
       - name: Build
         run: npm run build
